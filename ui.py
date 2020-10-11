@@ -56,7 +56,7 @@ class MdLibrary(QMainWindow):
         self.tagView.updateView()
 
         self.setWindowTitle("MD Library")
-        self.setWindowIcon(QIcon('img/markdown-2.png'))
+        self.setWindowIcon(QIcon('img/notebook.png'))
         self.setGeometry(300, 100, 1300, 800)
         self.show()
 
@@ -70,7 +70,7 @@ class MdLibrary(QMainWindow):
         for note in notes:
             if oldName in note.tags:
                 note.renameTag(self.db, oldName, newName)
-        if self.detailNote and oldName in self.detailNote.tags():
+        if self.detailNote and (oldName in self.detailNote.tags):
             self.detailNote.tags.remove(oldName)
             self.detailNote.tags.add(newName)
             self.detailView.updateView(self.detailNote)
