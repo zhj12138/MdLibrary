@@ -242,7 +242,7 @@ class MdLibrary(QMainWindow):
         file_path = QFileDialog.getExistingDirectory(self, "选择目录", filedir)
         if file_path:
             self.db.changeDir(file_path)
-            md_files = [os.path.join(file_path, file) for file in os.listdir(file_path) if file.endswith('.md')]
+            md_files = [os.path.abspath(os.path.join(file_path, file)) for file in os.listdir(file_path) if file.endswith('.md')]
             for md_file in md_files:
                 createANewNote(self.db, md_file)
             self.showAll()
@@ -252,7 +252,7 @@ class MdLibrary(QMainWindow):
             newName = getName(self.detailNote.name, self.db.getAllNoteNames())
             if newName:
                 curNoteDir = os.path.dirname(self.detailNote.file_path)
-                newFilePath = os.path.join(curNoteDir, newName + '.md')
+                newFilePath = os.path.abspath(os.path.join(curNoteDir, newName + '.md'))
                 try:
                     os.rename(self.detailNote.file_path, newFilePath)
                 except:
