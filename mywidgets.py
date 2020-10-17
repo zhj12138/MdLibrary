@@ -21,7 +21,7 @@ class MyToolBar(QToolBar):
         self.setIconSize(QSize(50, 50))
         self.setFont(QFont("", 13))
         self.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
-        self.url = 'https://github.com/zhj12138/ebook-manager'
+        self.url = 'https://github.com/zhj12138/MdLibrary'
 
         self.createNote = QAction(QIcon('img/add-7.png'), "新建", self)
 
@@ -234,6 +234,9 @@ class NoteView(QListWidget):
     def generateAddTagMenu(self):
         self.addToTag.clear()
         tags = self.db.getAllTags()
+        name = self.currentItem().text()
+        note = self.db.getNoteByName(name)
+        tags -= note.tags
         for tag in tags:
             action = QAction(tag, self)
             self.addToTag.addAction(action)

@@ -7,9 +7,11 @@ class MyDb:
     def __init__(self, name):
         self.name = name
         self.mdTable = "mdTable"
+        self.lastDir = "lastDirTable"
         self.conn = None
         self.cursor = None
         try:
+            self.createDirTable()
             self.createMdTable()
         except:
             pass
@@ -22,11 +24,44 @@ class MyDb:
         self.conn.commit()
         self.conn.close()
 
+    def createDirTable(self):
+        self.connect()
+        self.cursor.execute("create table %s (dir text)" % self.lastDir)
+        self.close()
+
     def createMdTable(self):
         self.connect()
         self.cursor.execute("create table %s (name text primary key, filepath text, mtime text, ctime text, atime text,"
                             "md5code text, pdfpath text, tags text)" % self.mdTable)
         self.close()
+
+    def hasDir(self):
+        self.connect()
+        ret = self.cursor.execute("select * from %s" % self.lastDir)
+        temp = []
+        for line in ret:
+            temp.append(line)
+        self.close()
+        if temp:
+            return True
+        return False
+
+    def changeDir(self, newDir):
+        self.connect()
+        self.cursor.execute("delete from %s" % self.lastDir)
+        self.cursor.execute("insert into %s values('%s')" % (self.lastDir, newDir))
+        self.close()
+
+    def getDir(self):
+        self.connect()
+        ret = self.cursor.execute("select * from %s" % self.lastDir)
+        temp = []
+        for line in ret:
+            temp.append(line[0])
+        self.close()
+        if temp:
+            return temp[0]
+        return "."
 
     def addNote(self, note):
         self.connect()

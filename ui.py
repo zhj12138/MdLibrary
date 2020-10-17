@@ -148,7 +148,7 @@ class MdLibrary(QMainWindow):
         box = QMessageBox(QMessageBox.Warning, "警告", "您确定要从磁盘上中删除此文件吗？")
         yes = box.addButton("确定", QMessageBox.YesRole)
         no = box.addButton("取消", QMessageBox.NoRole)
-        box.setIcon(2)
+        # box.setIcon(2)
         box.exec_()
         if box.clickedButton() == no:
             return
@@ -213,21 +213,35 @@ class MdLibrary(QMainWindow):
         self.numLabel.setText("共有{}个文件".format(num))
 
     def createMD(self):
-        file_path, _ = QFileDialog.getSaveFileName(self, "选择路径", ".", "markdown file(*.md)")
+        filedir = self.db.getDir()
+        if not os.path.exists(filedir):
+            filedir = "."
+        file_path, _ = QFileDialog.getSaveFileName(self, "选择路径", filedir, "markdown file(*.md)")
         if file_path:
+            base_dir = os.path.dirname(file_path)
+            self.db.changeDir(base_dir)
             createAEmptyNote(self.db, file_path)
             self.showAll()
 
     def inMD(self):
-        md_files, _ = QFileDialog.getOpenFileNames(self, "选择文件", ".", "markdown file(*.md)")
+        filedir = self.db.getDir()
+        if not os.path.exists(filedir):
+            filedir = "."
+        md_files, _ = QFileDialog.getOpenFileNames(self, "选择文件", filedir, "markdown file(*.md)")
         if md_files:
+            base_dir = os.path.dirname(md_files[0])
+            self.db.changeDir(base_dir)
             for md_file in md_files:
                 createANewNote(self.db, md_file)
             self.showAll()
 
     def inMDbyPath(self):
-        file_path = QFileDialog.getExistingDirectory(self, "选择目录", ".")
+        filedir = self.db.getDir()
+        if not os.path.exists(filedir):
+            filedir = "."
+        file_path = QFileDialog.getExistingDirectory(self, "选择目录", filedir)
         if file_path:
+            self.db.changeDir(file_path)
             md_files = [os.path.join(file_path, file) for file in os.listdir(file_path) if file.endswith('.md')]
             for md_file in md_files:
                 createANewNote(self.db, md_file)
@@ -261,8 +275,13 @@ class MdLibrary(QMainWindow):
     def linkToPDF(self):
         if not self.detailNote:
             return
-        filename, _ = QFileDialog.getOpenFileName(self, "选择文件", ".", "PDF file(*.pdf)")
+        filedir = self.db.getDir()
+        if not os.path.exists(filedir):
+            filedir = "."
+        filename, _ = QFileDialog.getOpenFileName(self, "选择文件", filedir, "PDF file(*.pdf)")
         if filename:
+            base_dir = os.path.dirname(filename)
+            self.db.changeDir(base_dir)
             self.detailNote.linkToPDF(self.db, filename)
             self.detailView.updateView(self.detailNote)
 
@@ -326,7 +345,7 @@ class MdLibrary(QMainWindow):
         box = QMessageBox(QMessageBox.Question, "注意", "您确定要从库中移除此文件吗？")
         yes = box.addButton("确定", QMessageBox.YesRole)
         no = box.addButton("取消", QMessageBox.NoRole)
-        box.setIcon(1)
+        # box.setIcon(1)
         box.exec_()
         if box.clickedButton() == no:
             return
@@ -342,9 +361,14 @@ class MdLibrary(QMainWindow):
             self.updateCurShow()
 
     def export(self):
-        filename, _ = QFileDialog.getSaveFileName(self, "导出信息", ".", "CSV file(*.csv)")
+        filedir = self.db.getDir()
+        if not os.path.exists(filedir):
+            filedir = "."
+        filename, _ = QFileDialog.getSaveFileName(self, "导出信息", filedir, "CSV file(*.csv)")
         if not filename:
             return
+        base_dir = os.path.dirname(filename)
+        self.db.changeDir(base_dir)
         headers = ['名称', '文件路径', 'PDF路径', '标签', '创建时间', '访问时间', '修改时间', 'md5码']
         rows = [(note.name, note.file_path, note.pdf_path, strSetToString(note.tags), note.create_time, note.visit_time,
                  note.mod_time, note.md5code) for note in self.curNotes]
@@ -358,7 +382,7 @@ class MdLibrary(QMainWindow):
             box = QMessageBox(QMessageBox.Question, "提醒", "导出完成，是否打开文件")
             yes = box.addButton("确定", QMessageBox.YesRole)
             no = box.addButton("取消", QMessageBox.NoRole)
-            box.setIcon(1)
+            # box.setIcon(1)
             box.exec_()
             if box.clickedButton() == no:
                 return
@@ -368,9 +392,13 @@ class MdLibrary(QMainWindow):
             QMessageBox.warning(self, "抱歉", "导出失败")
 
     def backUp(self):
-        dirname = QFileDialog.getExistingDirectory(self, "选择目录", ".")
+        filedir = self.db.getDir()
+        if not os.path.exists(filedir):
+            filedir = "."
+        dirname = QFileDialog.getExistingDirectory(self, "选择目录", filedir)
         if not dirname:
             return
+        self.db.changeDir(dirname)
         filepaths = [note.file_path for note in self.curNotes]
         t = backUpThread(backUpFile, (dirname, filepaths))
         t.finishSignal.connect(self.finishBackUp)
